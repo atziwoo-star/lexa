@@ -1,0 +1,178 @@
+// Lexa — schema núcleo (Fase 1)
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Rol {
+  ALUMNO
+  PROFESOR
+  ADMIN
+}
+
+enum Idioma {
+  INGLES
+  ESPANOL
+  COREANO
+}
+
+enum EstadoBooking {
+  CONFIRMADA
+  CANCELADA
+  COMPLETADA
+  NO_SHOW
+}
+
+enum EstadoPago {
+  PENDIENTE
+  COMPLETADO
+  FALLIDO
+  REEMBOLSADO
+}
+
+enum EstadoClase {
+  PROGRAMADA
+  EN_CURSO
+  FINALIZADA
+  CANCELADA
+}
+
+enum EstadoGrabacion {
+  NO_DISPONIBLE
+  PROCESANDO
+  DISPONIBLE
+}
+
+// Un usuario de Supabase Auth (id = auth.users.id) con su perfil de dominio.
+model User {
+  id                 String   @id
+  nombre             String
+  email              String   @unique
+  rol                Rol      @default(ALUMNO)
+  idiomas            Idioma[]
+  nivel              String?
+  zonaHoraria        String   @map("zona_horaria")
+  monedaPreferida    String   @default("USD") @map("moneda_preferida")
+  profesorPreferidoId String? @map("profesor_preferido_id")
+  profesorPreferido  Teacher? @relation("ProfesorPreferido", fields: [profesorPreferidoId], references: [id])
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  teacher       Teacher?
+  bookings      Booking[]
+  hourPackages  HourPackage[]
+  payments      Payment[]
+
+  @@map("users")
+}
+
+model Teacher {
+  id          String   @id @default(cuid())
+  userId      String   @unique @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  idiomas     Idioma[]
+  bio         String?
+  zonaHoraria String   @map("zona_horaria")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  availabilitySlots   AvailabilitySlot[]
+  alumnosPreferido    User[]             @relation("ProfesorPreferido")
+
+  @@map("teachers")
+}
+
+model AvailabilitySlot {
+  id            String   @id @default(cuid())
+  teacherId     String   @map("teacher_id")
+  teacher       Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  idioma        Idioma
+  inicioUtc     DateTime @map("inicio_utc")
+  finUtc        DateTime @map("fin_utc")
+  capacidadMax  Int      @default(5) @map("capacidad_max")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  bookings      Booking[]
+  classSession  ClassSession?
+
+  @@index([teacherId, inicioUtc])
+  @@map("availability_slots")
+}
+
+model Booking {
+  id                        String        @id @default(cuid())
+  slotId                    String        @map("slot_id")
+  slot                      AvailabilitySlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  userId                    String        @map("user_id")
+  user                      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hourPackageId             String        @map("hour_package_id")
+  hourPackage               HourPackage   @relation(fields: [hourPackageId], references: [id])
+  horasConsumidas           Decimal       @default(1) @map("horas_consumidas") @db.Decimal(5, 2)
+  estado                    EstadoBooking @default(CONFIRMADA)
+  fechaLimiteCancelacion    DateTime      @map("fecha_limite_cancelacion")
+  createdAt                 DateTime      @default(now()) @map("created_at")
+  updatedAt                 DateTime      @updatedAt @map("updated_at")
+
+  @@unique([slotId, userId])
+  @@index([userId])
+  @@index([hourPackageId])
+  @@map("bookings")
+}
+
+model HourPackage {
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  horasCompradas   Decimal  @map("horas_compradas") @db.Decimal(6, 2)
+  horasConsumidas  Decimal  @default(0) @map("horas_consumidas") @db.Decimal(6, 2)
+  fechaCompra      DateTime @default(now()) @map("fecha_compra")
+  fechaVencimiento DateTime @map("fecha_vencimiento")
+  monto            Decimal  @db.Decimal(10, 2)
+  moneda           String
+  montoUsd         Decimal  @map("monto_usd") @db.Decimal(10, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  payment          Payment?
+  bookings         Booking[]
+
+  @@index([userId])
+  @@map("hour_packages")
+}
+
+model Payment {
+  id                String      @id @default(cuid())
+  userId            String      @map("user_id")
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hourPackageId     String?     @unique @map("hour_package_id")
+  hourPackage       HourPackage? @relation(fields: [hourPackageId], references: [id])
+  monto             Decimal     @db.Decimal(10, 2)
+  moneda            String
+  montoUsd          Decimal     @map("monto_usd") @db.Decimal(10, 2)
+  fecha             DateTime    @default(now())
+  estado            EstadoPago  @default(PENDIENTE)
+  referenciaStripe  String?     @unique @map("referencia_stripe")
+
+  @@index([userId])
+  @@map("payments")
+}
+
+model ClassSession {
+  id               String          @id @default(cuid())
+  slotId           String          @unique @map("slot_id")
+  slot             AvailabilitySlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  salaJitsiId      String          @unique @map("sala_jitsi_id")
+  estado           EstadoClase     @default(PROGRAMADA)
+  grabacionUrl     String?         @map("grabacion_url")
+  grabacionEstado  EstadoGrabacion @default(NO_DISPONIBLE) @map("grabacion_estado")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  @@map("classes_sessions")
+}
