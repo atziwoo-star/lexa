@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { getCurrentUser } from "@/lib/auth";
 
 const checkoutSchema = z.object({
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const body = checkoutSchema.parse(await request.json());
   const precioBaseUsd = 20;
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     mode: "payment",
     customer_email: user.email,
     line_items: [
