@@ -28,29 +28,41 @@ export async function POST(request: Request) {
     const horas = Number(session.metadata?.horas ?? 0);
 
     if (userId && horas > 0) {
-      const montoUsd = (session.amount_total ?? 0) / 100;
-      const hourPackage = await prisma.hourPackage.create({
-        data: {
-          userId,
-          horasCompradas: horas,
-          fechaVencimiento: DateTime.utc().plus({ months: 1 }).toJSDate(),
-          monto: montoUsd,
-          moneda: session.currency?.toUpperCase() ?? "USD",
-          montoUsd,
-        },
+      // Stripe can deliver the same event more than once (retries, duplicate
+      // delivery). Skip if we've already recorded this checkout session,
+      // otherwise the student would get double hours credited for one payment.
+      const existing = await prisma.payment.findUnique({
+        where: { referenciaStripe: session.id },
       });
 
-      await prisma.payment.create({
-        data: {
-          userId,
-          hourPackageId: hourPackage.id,
-          monto: montoUsd,
-          moneda: session.currency?.toUpperCase() ?? "USD",
-          montoUsd,
-          estado: "COMPLETADO",
-          referenciaStripe: session.id,
-        },
-      });
+      if (!existing) {
+        const montoUsd = (session.amount_total ?? 0) / 100;
+
+        await prisma.$transaction(async (tx) => {
+          const hourPackage = await tx.hourPackage.create({
+            data: {
+              userId,
+              horasCompradas: horas,
+              fechaVencimiento: DateTime.utc().plus({ months: 1 }).toJSDate(),
+              monto: montoUsd,
+              moneda: session.currency?.toUpperCase() ?? "USD",
+              montoUsd,
+            },
+          });
+
+          await tx.payment.create({
+            data: {
+              userId,
+              hourPackageId: hourPackage.id,
+              monto: montoUsd,
+              moneda: session.currency?.toUpperCase() ?? "USD",
+              montoUsd,
+              estado: "COMPLETADO",
+              referenciaStripe: session.id,
+            },
+          });
+        });
+      }
     }
   }
 

@@ -3,11 +3,18 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { BookingsList, type BookingForClient } from "@/components/bookings-list";
 import { BookClassPanel } from "@/components/book-class-panel";
+import { BuyHoursPanel } from "@/components/buy-hours-panel";
 import { SignOutButton } from "@/components/sign-out-button";
 
-export default async function StudentPage() {
+export default async function StudentPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ purchase?: string }>;
+}) {
   const user = await getCurrentUser();
   if (!user || user.rol !== "ALUMNO") redirect("/login");
+
+  const { purchase } = await searchParams;
 
   const [hourPackages, bookings] = await Promise.all([
     prisma.hourPackage.findMany({
@@ -46,9 +53,23 @@ export default async function StudentPage() {
         <SignOutButton />
       </header>
 
+      {purchase === "success" && (
+        <p className="rounded border border-green-600 bg-green-50 px-3 py-2 text-sm text-green-800 dark:bg-green-950">
+          Payment received — your hours have been added below.
+        </p>
+      )}
+      {purchase === "cancelled" && (
+        <p className="rounded border px-3 py-2 text-sm text-neutral-600">
+          Checkout was cancelled — no charge was made.
+        </p>
+      )}
+
       <section>
         <p className="text-sm text-neutral-600">Hours available</p>
         <p className="text-3xl font-semibold">{hoursBalance}</p>
+        <div className="mt-3">
+          <BuyHoursPanel />
+        </div>
       </section>
 
       <section>
