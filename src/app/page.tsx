@@ -89,8 +89,23 @@ export default async function Home() {
   const dashboardPath =
     user?.rol === "PROFESOR" ? "/teacher" : user?.rol === "ADMIN" ? "/admin" : "/student";
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    name: "Lexa",
+    url: process.env.NEXT_PUBLIC_APP_URL ?? "https://www.lexalab.net",
+    description:
+      "Live virtual English, Spanish, and Korean classes in small groups of up to 5 students, with real teachers.",
+    priceRange: "$20/hour",
+    availableLanguage: ["English", "Spanish", "Korean"],
+  };
+
   return (
     <div className="flex flex-1 flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="sticky top-0 z-10 border-b border-transparent bg-background/80 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6">
           <span className="flex flex-col items-center gap-1">

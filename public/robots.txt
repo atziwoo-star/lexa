@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /student
+Disallow: /teacher
+Disallow: /class
+Disallow: /invite
+
+Sitemap: https://www.lexalab.net/sitemap.xml
