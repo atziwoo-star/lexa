@@ -84,7 +84,7 @@ export default async function AdminPage() {
   ).length;
 
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 p-6">
+    <main className="animate-fade-in-up mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 p-6">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Admin dashboard</h1>
@@ -94,20 +94,20 @@ export default async function AdminPage() {
       </header>
 
       <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded border px-4 py-3">
+        <div className="rounded border px-4 py-3 transition-all hover:-translate-y-0.5 hover:shadow-md">
           <p className="text-xs text-neutral-600">Students</p>
           <p className="text-2xl font-semibold">{students.length}</p>
           <p className="text-xs text-neutral-500">{activeStudentCount} with hours</p>
         </div>
-        <div className="rounded border px-4 py-3">
+        <div className="rounded border px-4 py-3 transition-all hover:-translate-y-0.5 hover:shadow-md">
           <p className="text-xs text-neutral-600">Teachers</p>
           <p className="text-2xl font-semibold">{teachers.length}</p>
         </div>
-        <div className="rounded border px-4 py-3">
+        <div className="rounded border px-4 py-3 transition-all hover:-translate-y-0.5 hover:shadow-md">
           <p className="text-xs text-neutral-600">Hours sold this month</p>
           <p className="text-2xl font-semibold">{hoursSoldThisMonth}</p>
         </div>
-        <div className="rounded border px-4 py-3">
+        <div className="rounded border px-4 py-3 transition-all hover:-translate-y-0.5 hover:shadow-md">
           <p className="text-xs text-neutral-600">Revenue this month</p>
           <p className="text-2xl font-semibold">
             {formatUsd(revenueThisMonthUsd)}
@@ -137,7 +137,10 @@ export default async function AdminPage() {
               </thead>
               <tbody>
                 {studentRows.map((row) => (
-                  <tr key={row.id} className="border-b last:border-0">
+                  <tr
+                    key={row.id}
+                    className="border-b transition-colors last:border-0 hover:bg-neutral-50 dark:hover:bg-neutral-900"
+                  >
                     <td className="px-3 py-2">
                       <div className="font-medium">{row.nombre}</div>
                       <div className="text-xs text-neutral-500">{row.email}</div>
@@ -186,7 +189,10 @@ export default async function AdminPage() {
               </thead>
               <tbody>
                 {teachers.map((teacher) => (
-                  <tr key={teacher.id} className="border-b last:border-0">
+                  <tr
+                    key={teacher.id}
+                    className="border-b transition-colors last:border-0 hover:bg-neutral-50 dark:hover:bg-neutral-900"
+                  >
                     <td className="px-3 py-2">
                       <div className="font-medium">{teacher.user.nombre}</div>
                       <div className="text-xs text-neutral-500">{teacher.user.email}</div>

@@ -66,7 +66,7 @@ export function EditTeacherButton({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="text-xs text-indigo-600 underline"
+        className="text-xs text-indigo-600 underline transition-colors hover:text-indigo-500"
       >
         Edit
       </button>
@@ -90,7 +90,7 @@ export function EditTeacherButton({
       <select
         value={zonaHoraria}
         onChange={(e) => setZonaHoraria(e.target.value)}
-        className="rounded border px-2 py-1"
+        className="rounded border px-2 py-1 outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
       >
         {timezoneOptions.map((tz) => (
           <option key={tz} value={tz}>
@@ -103,11 +103,15 @@ export function EditTeacherButton({
         <button
           type="submit"
           disabled={loading || idiomas.length === 0}
-          className="rounded bg-indigo-600 px-2 py-1 text-white disabled:opacity-50"
+          className="rounded bg-indigo-600 px-2 py-1 text-white transition-all hover:scale-105 hover:bg-indigo-500 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
         >
           {loading ? "Saving..." : "Save"}
         </button>
-        <button type="button" onClick={() => setOpen(false)} className="underline">
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="underline transition-colors hover:text-neutral-600"
+        >
           Cancel
         </button>
       </div>

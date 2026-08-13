@@ -70,7 +70,7 @@ export function BookClassPanel() {
       <select
         value={idioma}
         onChange={(e) => setIdioma(e.target.value)}
-        className="w-fit rounded border px-3 py-2"
+        className="w-fit rounded border px-3 py-2 outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
       >
         {Object.entries(idiomaLabels).map(([value, label]) => (
           <option key={value} value={value}>
@@ -96,7 +96,7 @@ export function BookClassPanel() {
           return (
             <div
               key={slot.id}
-              className="flex items-center justify-between rounded border px-3 py-2"
+              className="flex items-center justify-between rounded border px-3 py-2 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900"
             >
               <div>
                 <p className="text-sm font-medium">
@@ -110,7 +110,7 @@ export function BookClassPanel() {
               <button
                 onClick={() => handleBook(slot.id)}
                 disabled={bookingId === slot.id}
-                className="rounded bg-indigo-600 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+                className="rounded bg-indigo-600 px-3 py-1.5 text-sm text-white transition-all hover:scale-[1.03] hover:bg-indigo-500 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
               >
                 {bookingId === slot.id ? "Booking..." : "Book"}
               </button>

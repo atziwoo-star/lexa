@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { AuthShell } from "@/components/auth-shell";
 
 export default function RegisterPage() {
   const [nombre, setNombre] = useState("");
@@ -34,15 +35,16 @@ export default function RegisterPage() {
 
   if (done) {
     return (
-      <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center p-6">
-        <p>Check your email to confirm your account.</p>
-      </main>
+      <AuthShell title="Check your email">
+        <p className="text-sm text-neutral-600">
+          We sent a confirmation link to <span className="font-medium">{email}</span> — click it to activate your account.
+        </p>
+      </AuthShell>
     );
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-4 p-6">
-      <h1 className="text-xl font-semibold">Create an account</h1>
+    <AuthShell title="Create an account">
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
           type="text"
@@ -50,7 +52,7 @@ export default function RegisterPage() {
           placeholder="Name"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
-          className="rounded border px-3 py-2"
+          className="rounded border px-3 py-2 outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
         />
         <input
           type="email"
@@ -58,7 +60,7 @@ export default function RegisterPage() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded border px-3 py-2"
+          className="rounded border px-3 py-2 outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
         />
         <input
           type="password"
@@ -67,17 +69,17 @@ export default function RegisterPage() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded border px-3 py-2"
+          className="rounded border px-3 py-2 outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
         />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="rounded bg-indigo-600 px-3 py-2 text-white disabled:opacity-50"
+          className="rounded bg-indigo-600 px-3 py-2 text-white transition-all hover:scale-[1.02] hover:bg-indigo-500 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
         >
           {loading ? "Creating..." : "Create account"}
         </button>
       </form>
-    </main>
+    </AuthShell>
   );
 }

@@ -61,7 +61,7 @@ export default async function StudentPage({
   }));
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 p-6">
+    <main className="animate-fade-in-up mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 p-6">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">My account</h1>

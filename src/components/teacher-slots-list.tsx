@@ -29,7 +29,7 @@ export function TeacherSlotsList({ slots }: { slots: TeacherSlotForClient[] }) {
         return (
           <div
             key={slot.id}
-            className="flex items-center justify-between rounded border px-3 py-2"
+            className="flex items-center justify-between rounded border px-3 py-2 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900"
           >
             <div>
               <p className="text-sm font-medium">
@@ -46,7 +46,7 @@ export function TeacherSlotsList({ slots }: { slots: TeacherSlotForClient[] }) {
                 href={`/class/${slot.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded bg-indigo-600 px-3 py-1.5 text-sm text-white"
+                className="rounded bg-indigo-600 px-3 py-1.5 text-sm text-white transition-all hover:scale-[1.03] hover:bg-indigo-500 hover:shadow-md active:scale-95"
               >
                 Join class
               </Link>

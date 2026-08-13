@@ -64,7 +64,7 @@ export function BookingsList({
           return (
             <div
               key={booking.id}
-              className="flex items-center justify-between rounded border px-3 py-2"
+              className="flex items-center justify-between rounded border px-3 py-2 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900"
             >
               <div>
                 <p className="text-sm font-medium">
@@ -81,7 +81,7 @@ export function BookingsList({
                     href={`/class/${booking.slotId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded bg-indigo-600 px-3 py-1.5 text-sm text-white"
+                    className="rounded bg-indigo-600 px-3 py-1.5 text-sm text-white transition-all hover:scale-[1.03] hover:bg-indigo-500 hover:shadow-md active:scale-95"
                   >
                     Join class
                   </Link>
@@ -89,7 +89,7 @@ export function BookingsList({
                 <button
                   onClick={() => handleCancel(booking.id)}
                   disabled={cancellingId === booking.id}
-                  className="rounded border px-3 py-1.5 text-sm disabled:opacity-50"
+                  className="rounded border px-3 py-1.5 text-sm transition-all hover:scale-[1.03] hover:bg-neutral-50 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 dark:hover:bg-neutral-900"
                 >
                   {cancellingId === booking.id ? "Cancelling..." : "Cancel"}
                 </button>

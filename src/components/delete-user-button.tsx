@@ -45,7 +45,7 @@ export function DeleteUserButton({
       <button
         onClick={handleDelete}
         disabled={loading}
-        className="text-xs text-red-600 underline disabled:opacity-50"
+        className="text-xs text-red-600 underline transition-colors hover:text-red-500 disabled:opacity-50"
       >
         {loading ? "Deleting..." : "Delete"}
       </button>

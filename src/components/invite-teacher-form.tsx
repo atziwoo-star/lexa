@@ -54,7 +54,10 @@ export function InviteTeacherForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded border p-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-3 rounded border p-4 transition-colors focus-within:border-indigo-300"
+    >
       <div className="grid gap-3 sm:grid-cols-2">
         <input
           type="text"
@@ -62,7 +65,7 @@ export function InviteTeacherForm() {
           placeholder="Name"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
-          className="rounded border px-3 py-2 text-sm"
+          className="rounded border px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
         />
         <input
           type="email"
@@ -70,7 +73,7 @@ export function InviteTeacherForm() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded border px-3 py-2 text-sm"
+          className="rounded border px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
         />
       </div>
 
@@ -105,7 +108,7 @@ export function InviteTeacherForm() {
       <button
         type="submit"
         disabled={loading || idiomas.length === 0}
-        className="self-start rounded bg-indigo-600 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+        className="self-start rounded bg-indigo-600 px-3 py-1.5 text-sm text-white transition-all hover:scale-[1.03] hover:bg-indigo-500 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
       >
         {loading ? "Sending..." : "Send invite"}
       </button>

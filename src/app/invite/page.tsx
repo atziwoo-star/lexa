@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { AuthShell } from "@/components/auth-shell";
 
 export default function InvitePage() {
   const [password, setPassword] = useState("");
@@ -65,11 +66,10 @@ export default function InvitePage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-4 p-6">
-      <h1 className="text-xl font-semibold">Welcome to Lexa</h1>
-      <p className="text-sm text-neutral-600">
-        Set a password to finish setting up your teacher account.
-      </p>
+    <AuthShell
+      title="Welcome to Lexa"
+      subtitle="Set a password to finish setting up your teacher account."
+    >
       {!ready ? (
         <p className="text-sm text-neutral-600">Verifying your invite link...</p>
       ) : (
@@ -81,7 +81,7 @@ export default function InvitePage() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded border px-3 py-2"
+            className="rounded border px-3 py-2 outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
           />
           {error && (
             <p className="text-sm text-red-600">
@@ -91,12 +91,12 @@ export default function InvitePage() {
           <button
             type="submit"
             disabled={loading}
-            className="rounded bg-indigo-600 px-3 py-2 text-white disabled:opacity-50"
+            className="rounded bg-indigo-600 px-3 py-2 text-white transition-all hover:scale-[1.02] hover:bg-indigo-500 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
           >
             {loading ? "Saving..." : "Set password and continue"}
           </button>
         </form>
       )}
-    </main>
+    </AuthShell>
   );
 }

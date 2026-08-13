@@ -39,7 +39,7 @@ export function BuyHoursPanel() {
           max={100}
           value={horas}
           onChange={(e) => setHoras(Math.max(1, Number(e.target.value)))}
-          className="w-24 rounded border px-3 py-2"
+          className="w-24 rounded border px-3 py-2 outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
         />
       </div>
       <p className="pb-2 text-sm text-neutral-600">
@@ -48,7 +48,7 @@ export function BuyHoursPanel() {
       <button
         onClick={handleBuy}
         disabled={loading}
-        className="rounded bg-indigo-600 px-4 py-2 text-sm text-white disabled:opacity-50"
+        className="rounded bg-indigo-600 px-4 py-2 text-sm text-white transition-all hover:scale-[1.03] hover:bg-indigo-500 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
       >
         {loading ? "Redirecting..." : "Buy hours"}
       </button>
