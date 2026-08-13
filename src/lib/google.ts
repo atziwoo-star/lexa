@@ -1,6 +1,12 @@
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
-const CALENDAR_EVENTS_SCOPE = "https://www.googleapis.com/auth/calendar.events";
+const MEET_API_URL = "https://meet.googleapis.com/v2";
+const DRIVE_API_URL = "https://www.googleapis.com/drive/v3";
+const OAUTH_SCOPES = [
+  "https://www.googleapis.com/auth/calendar.events",
+  "https://www.googleapis.com/auth/meetings.space.readonly",
+  "https://www.googleapis.com/auth/drive",
+].join(" ");
 
 function getRedirectUri() {
   return `${process.env.NEXT_PUBLIC_APP_URL}/api/google/callback`;
@@ -11,7 +17,7 @@ export function getGoogleAuthUrl() {
     client_id: process.env.GOOGLE_CLIENT_ID!,
     redirect_uri: getRedirectUri(),
     response_type: "code",
-    scope: CALENDAR_EVENTS_SCOPE,
+    scope: OAUTH_SCOPES,
     access_type: "offline",
     prompt: "consent",
   });
@@ -113,4 +119,87 @@ export async function createMeetEvent({
     meetUrl: event.hangoutLink,
     conferenceId: event.conferenceData?.conferenceId,
   };
+}
+
+// Looks up the finished conference for a Meet meeting code and returns the
+// Drive fileId of its recording, once Google has finished generating it.
+// Returns null if the conference hasn't ended yet, or the recording isn't
+// ready yet — both are expected, not error, states while polling.
+export async function getConferenceRecordingFile(meetingCode: string) {
+  const accessToken = await getAccessToken();
+
+  const recordsRes = await fetch(
+    `${MEET_API_URL}/conferenceRecords?filter=${encodeURIComponent(`space.meeting_code = "${meetingCode}"`)}`,
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+  if (!recordsRes.ok) {
+    throw new Error(`Failed to list conference records: ${await recordsRes.text()}`);
+  }
+  const { conferenceRecords } = (await recordsRes.json()) as {
+    conferenceRecords?: { name: string; endTime?: string }[];
+  };
+  const record = conferenceRecords?.find((r) => r.endTime);
+  if (!record) return null;
+
+  const recordingsRes = await fetch(`${MEET_API_URL}/${record.name}/recordings`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!recordingsRes.ok) {
+    throw new Error(`Failed to list recordings: ${await recordingsRes.text()}`);
+  }
+  const { recordings } = (await recordingsRes.json()) as {
+    recordings?: { state: string; driveDestination?: { file?: string } }[];
+  };
+  const ready = recordings?.find((r) => r.state === "FILE_GENERATED");
+  return ready?.driveDestination?.file ?? null;
+}
+
+// Shares a recording file with each email for a limited time (Drive expires
+// the permission itself, no code needs to run again to revoke access), and
+// returns a link students/teachers can open to watch it.
+export async function shareRecording(fileId: string, emails: string[], expiresAt: Date) {
+  const accessToken = await getAccessToken();
+
+  for (const email of emails) {
+    const res = await fetch(
+      `${DRIVE_API_URL}/files/${fileId}/permissions?sendNotificationEmail=true`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "user",
+          role: "reader",
+          emailAddress: email,
+          expirationTime: expiresAt.toISOString(),
+        }),
+      },
+    );
+    if (!res.ok) {
+      throw new Error(`Failed to share recording with ${email}: ${await res.text()}`);
+    }
+  }
+
+  const fileRes = await fetch(`${DRIVE_API_URL}/files/${fileId}?fields=webViewLink`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!fileRes.ok) {
+    throw new Error(`Failed to fetch recording link: ${await fileRes.text()}`);
+  }
+  const { webViewLink } = (await fileRes.json()) as { webViewLink: string };
+  return webViewLink;
+}
+
+export async function deleteRecording(fileId: string) {
+  const accessToken = await getAccessToken();
+
+  const res = await fetch(`${DRIVE_API_URL}/files/${fileId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok && res.status !== 404) {
+    throw new Error(`Failed to delete recording: ${await res.text()}`);
+  }
 }

@@ -7,6 +7,7 @@ import {
   type TeacherSlotForClient,
 } from "@/components/teacher-slots-list";
 import { SignOutButton } from "@/components/sign-out-button";
+import { PastClassesList, type PastClassForClient } from "@/components/past-classes-list";
 
 export default async function TeacherPage() {
   const user = await getCurrentUser();
@@ -17,13 +18,23 @@ export default async function TeacherPage() {
   });
   if (!teacher) redirect("/login");
 
-  const slots = await prisma.availabilitySlot.findMany({
-    where: { teacherId: teacher.id, inicioUtc: { gte: new Date() } },
-    include: {
-      bookings: { where: { estado: "CONFIRMADA" }, include: { user: true } },
-    },
-    orderBy: { inicioUtc: "asc" },
-  });
+  const [slots, pastSlots] = await Promise.all([
+    prisma.availabilitySlot.findMany({
+      where: { teacherId: teacher.id, finUtc: { gte: new Date() } },
+      include: {
+        bookings: { where: { estado: "CONFIRMADA" }, include: { user: true } },
+      },
+      orderBy: { inicioUtc: "asc" },
+    }),
+    prisma.availabilitySlot.findMany({
+      where: { teacherId: teacher.id, finUtc: { lt: new Date() } },
+      include: {
+        bookings: { where: { estado: "CONFIRMADA" }, include: { user: true } },
+        classSession: true,
+      },
+      orderBy: { inicioUtc: "desc" },
+    }),
+  ]);
 
   const slotsForClient: TeacherSlotForClient[] = slots.map((slot) => ({
     id: slot.id,
@@ -32,6 +43,18 @@ export default async function TeacherPage() {
     finUtc: slot.finUtc.toISOString(),
     capacidadMax: slot.capacidadMax,
     studentNames: slot.bookings.map((b) => b.user.nombre),
+  }));
+
+  const pastClassesForClient: PastClassForClient[] = pastSlots.map((slot) => ({
+    id: slot.id,
+    idioma: slot.idioma,
+    inicioUtc: slot.inicioUtc.toISOString(),
+    withLabel:
+      slot.bookings.length > 0
+        ? `with ${slot.bookings.map((b) => b.user.nombre).join(", ")}`
+        : "no students booked",
+    grabacionEstado: slot.classSession?.grabacionEstado ?? "NO_DISPONIBLE",
+    grabacionUrl: slot.classSession?.grabacionUrl ?? null,
   }));
 
   return (
@@ -52,6 +75,11 @@ export default async function TeacherPage() {
       <section>
         <h2 className="mb-3 text-lg font-semibold">Upcoming classes</h2>
         <TeacherSlotsList slots={slotsForClient} />
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-lg font-semibold">Past classes</h2>
+        <PastClassesList classes={pastClassesForClient} />
       </section>
     </main>
   );

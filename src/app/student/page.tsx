@@ -5,6 +5,7 @@ import { BookingsList, type BookingForClient } from "@/components/bookings-list"
 import { BookClassPanel } from "@/components/book-class-panel";
 import { BuyHoursPanel } from "@/components/buy-hours-panel";
 import { SignOutButton } from "@/components/sign-out-button";
+import { PastClassesList, type PastClassForClient } from "@/components/past-classes-list";
 
 export default async function StudentPage({
   searchParams,
@@ -16,14 +17,21 @@ export default async function StudentPage({
 
   const { purchase } = await searchParams;
 
-  const [hourPackages, bookings] = await Promise.all([
+  const [hourPackages, bookings, pastBookings] = await Promise.all([
     prisma.hourPackage.findMany({
       where: { userId: user.id, fechaVencimiento: { gte: new Date() } },
     }),
     prisma.booking.findMany({
-      where: { userId: user.id, estado: "CONFIRMADA" },
+      where: { userId: user.id, estado: "CONFIRMADA", slot: { finUtc: { gte: new Date() } } },
       include: { slot: { include: { teacher: { include: { user: true } } } } },
       orderBy: { slot: { inicioUtc: "asc" } },
+    }),
+    prisma.booking.findMany({
+      where: { userId: user.id, estado: "CONFIRMADA", slot: { finUtc: { lt: new Date() } } },
+      include: {
+        slot: { include: { teacher: { include: { user: true } }, classSession: true } },
+      },
+      orderBy: { slot: { inicioUtc: "desc" } },
     }),
   ]);
 
@@ -41,6 +49,15 @@ export default async function StudentPage({
     finUtc: booking.slot.finUtc.toISOString(),
     fechaLimiteCancelacion: booking.fechaLimiteCancelacion.toISOString(),
     teacherName: booking.slot.teacher.user.nombre,
+  }));
+
+  const pastClassesForClient: PastClassForClient[] = pastBookings.map((booking) => ({
+    id: booking.slotId,
+    idioma: booking.slot.idioma,
+    inicioUtc: booking.slot.inicioUtc.toISOString(),
+    withLabel: `with ${booking.slot.teacher.user.nombre}`,
+    grabacionEstado: booking.slot.classSession?.grabacionEstado ?? "NO_DISPONIBLE",
+    grabacionUrl: booking.slot.classSession?.grabacionUrl ?? null,
   }));
 
   return (
@@ -80,6 +97,11 @@ export default async function StudentPage({
       <section>
         <h2 className="mb-3 text-lg font-semibold">Book a class</h2>
         <BookClassPanel />
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-lg font-semibold">Past classes</h2>
+        <PastClassesList classes={pastClassesForClient} />
       </section>
     </main>
   );

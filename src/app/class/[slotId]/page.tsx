@@ -54,6 +54,7 @@ export default async function ClassPage({
         slotId,
         meetEventId: meetEvent.eventId,
         meetUrl: meetEvent.meetUrl,
+        meetConferenceId: meetEvent.conferenceId,
         estado: "EN_CURSO",
       },
     });

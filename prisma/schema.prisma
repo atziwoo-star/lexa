@@ -47,6 +47,7 @@ enum EstadoGrabacion {
   NO_DISPONIBLE
   PROCESANDO
   DISPONIBLE
+  ELIMINADA
 }
 
 // Un usuario de Supabase Auth (id = auth.users.id) con su perfil de dominio.
@@ -169,9 +170,12 @@ model ClassSession {
   slot             AvailabilitySlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
   meetEventId      String?         @unique @map("meet_event_id")
   meetUrl          String?         @map("meet_url")
+  meetConferenceId String?         @map("meet_conference_id")
   estado           EstadoClase     @default(PROGRAMADA)
   grabacionUrl     String?         @map("grabacion_url")
   grabacionEstado  EstadoGrabacion @default(NO_DISPONIBLE) @map("grabacion_estado")
+  grabacionDriveFileId    String?  @map("grabacion_drive_file_id")
+  grabacionCompartidaAt   DateTime? @map("grabacion_compartida_at")
   createdAt        DateTime        @default(now()) @map("created_at")
   updatedAt        DateTime        @updatedAt @map("updated_at")
 
