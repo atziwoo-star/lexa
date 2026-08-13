@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/auth";
+import { SignOutButton } from "@/components/sign-out-button";
 
 const languages = [
   {
@@ -49,21 +51,36 @@ const reasons = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const user = await getCurrentUser();
+  const dashboardPath =
+    user?.rol === "PROFESOR" ? "/teacher" : user?.rol === "ADMIN" ? "/admin" : "/student";
+
   return (
     <div className="flex flex-1 flex-col">
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6">
         <span className="text-lg font-semibold">Lexa</span>
         <nav className="flex items-center gap-4 text-sm">
-          <Link href="/login" className="text-neutral-600 hover:underline">
-            Log in
-          </Link>
-          <Link
-            href="/register"
-            className="rounded bg-indigo-600 px-3 py-1.5 text-white"
-          >
-            Sign up
-          </Link>
+          {user ? (
+            <>
+              <Link href={dashboardPath} className="text-neutral-600 hover:underline">
+                Dashboard
+              </Link>
+              <SignOutButton />
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="text-neutral-600 hover:underline">
+                Log in
+              </Link>
+              <Link
+                href="/register"
+                className="rounded bg-indigo-600 px-3 py-1.5 text-white"
+              >
+                Sign up
+              </Link>
+            </>
+          )}
         </nav>
       </header>
 
