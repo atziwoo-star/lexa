@@ -94,15 +94,26 @@ export default async function Home() {
             per class. Book what fits your schedule, in your own timezone.
           </p>
           <div className="flex gap-3">
-            <Link
-              href="/register"
-              className="rounded bg-indigo-600 px-5 py-2.5 text-white"
-            >
-              Get started
-            </Link>
-            <Link href="/login" className="rounded border px-5 py-2.5">
-              Log in
-            </Link>
+            {user ? (
+              <Link
+                href={dashboardPath}
+                className="rounded bg-indigo-600 px-5 py-2.5 text-white"
+              >
+                Go to dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/register"
+                  className="rounded bg-indigo-600 px-5 py-2.5 text-white"
+                >
+                  Get started
+                </Link>
+                <Link href="/login" className="rounded border px-5 py-2.5">
+                  Log in
+                </Link>
+              </>
+            )}
           </div>
         </section>
 
@@ -166,10 +177,10 @@ export default async function Home() {
             month, and we&apos;ll remind you before they expire.
           </p>
           <Link
-            href="/register"
+            href={user ? dashboardPath : "/register"}
             className="rounded bg-indigo-600 px-5 py-2.5 text-white"
           >
-            Get started
+            {user ? "Go to dashboard" : "Get started"}
           </Link>
         </section>
       </main>

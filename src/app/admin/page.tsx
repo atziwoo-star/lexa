@@ -3,6 +3,9 @@ import { DateTime } from "luxon";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SignOutButton } from "@/components/sign-out-button";
+import { idiomaLabels } from "@/lib/labels";
+import { InviteTeacherForm } from "@/components/invite-teacher-form";
+import { PromoteStudentButton } from "@/components/promote-student-button";
 
 function formatUsd(amount: number) {
   return amount.toLocaleString("en-US", {
@@ -18,13 +21,16 @@ export default async function AdminPage() {
   const monthStart = DateTime.now().startOf("month").toJSDate();
   const now = new Date();
 
-  const [students, teacherCount, payments] = await Promise.all([
+  const [students, teachers, payments] = await Promise.all([
     prisma.user.findMany({
       where: { rol: "ALUMNO" },
       include: { hourPackages: true },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.teacher.count(),
+    prisma.teacher.findMany({
+      include: { user: true },
+      orderBy: { createdAt: "desc" },
+    }),
     prisma.payment.findMany({ where: { estado: "COMPLETADO" } }),
   ]);
 
@@ -93,7 +99,7 @@ export default async function AdminPage() {
         </div>
         <div className="rounded border px-4 py-3">
           <p className="text-xs text-neutral-600">Teachers</p>
-          <p className="text-2xl font-semibold">{teacherCount}</p>
+          <p className="text-2xl font-semibold">{teachers.length}</p>
         </div>
         <div className="rounded border px-4 py-3">
           <p className="text-xs text-neutral-600">Hours sold this month</p>
@@ -124,6 +130,7 @@ export default async function AdminPage() {
                   <th className="px-3 py-2 font-medium">Bought this month</th>
                   <th className="px-3 py-2 font-medium">Total spent</th>
                   <th className="px-3 py-2 font-medium">Next expiration</th>
+                  <th className="px-3 py-2 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -143,6 +150,45 @@ export default async function AdminPage() {
                           )
                         : "—"}
                     </td>
+                    <td className="px-3 py-2">
+                      <PromoteStudentButton userId={row.id} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-lg font-semibold">Teachers</h2>
+        <div className="mb-4">
+          <InviteTeacherForm />
+        </div>
+        {teachers.length === 0 ? (
+          <p className="text-sm text-neutral-600">No teachers yet.</p>
+        ) : (
+          <div className="overflow-x-auto rounded border">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b bg-neutral-50 text-xs text-neutral-600 dark:bg-neutral-900">
+                <tr>
+                  <th className="px-3 py-2 font-medium">Teacher</th>
+                  <th className="px-3 py-2 font-medium">Languages</th>
+                  <th className="px-3 py-2 font-medium">Timezone</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teachers.map((teacher) => (
+                  <tr key={teacher.id} className="border-b last:border-0">
+                    <td className="px-3 py-2">
+                      <div className="font-medium">{teacher.user.nombre}</div>
+                      <div className="text-xs text-neutral-500">{teacher.user.email}</div>
+                    </td>
+                    <td className="px-3 py-2">
+                      {teacher.idiomas.map((i) => idiomaLabels[i]).join(", ")}
+                    </td>
+                    <td className="px-3 py-2">{teacher.zonaHoraria}</td>
                   </tr>
                 ))}
               </tbody>
