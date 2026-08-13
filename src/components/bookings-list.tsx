@@ -79,6 +79,8 @@ export function BookingsList({
                 {joinable && (
                   <Link
                     href={`/class/${booking.slotId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="rounded bg-indigo-600 px-3 py-1.5 text-sm text-white"
                   >
                     Join class

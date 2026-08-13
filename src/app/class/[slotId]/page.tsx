@@ -1,9 +1,9 @@
-import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { JitsiRoom } from "@/components/jitsi-room";
+import { createMeetEvent } from "@/lib/google";
 import { isClassJoinable } from "@/lib/class-join-window";
+import { idiomaLabels } from "@/lib/labels";
 
 export default async function ClassPage({
   params,
@@ -21,8 +21,8 @@ export default async function ClassPage({
   const slot = await prisma.availabilitySlot.findUnique({
     where: { id: slotId },
     include: {
-      teacher: true,
-      bookings: { where: { estado: "CONFIRMADA" } },
+      teacher: { include: { user: true } },
+      bookings: { where: { estado: "CONFIRMADA" }, include: { user: true } },
     },
   });
 
@@ -34,24 +34,30 @@ export default async function ClassPage({
 
   if (!isClassJoinable(slot.inicioUtc, slot.finUtc)) redirect(dashboardPath);
 
-  const classSession = await prisma.classSession.upsert({
-    where: { slotId },
-    create: {
-      slotId,
-      salaJitsiId: `lexa-${randomUUID()}`,
-      estado: "EN_CURSO",
-    },
-    update: {},
-  });
+  let classSession = await prisma.classSession.findUnique({ where: { slotId } });
 
-  return (
-    <div className="h-dvh w-full">
-      <JitsiRoom
-        domain={process.env.NEXT_PUBLIC_JITSI_DOMAIN ?? "meet.jit.si"}
-        roomName={classSession.salaJitsiId}
-        displayName={user.nombre}
-        email={user.email}
-      />
-    </div>
-  );
+  if (!classSession) {
+    const attendees = [
+      slot.teacher.user.email,
+      ...slot.bookings.map((b) => b.user.email),
+    ];
+
+    const meetEvent = await createMeetEvent({
+      summary: `${idiomaLabels[slot.idioma]} class with ${slot.teacher.user.nombre}`,
+      startTimeIso: slot.inicioUtc.toISOString(),
+      endTimeIso: slot.finUtc.toISOString(),
+      attendees,
+    });
+
+    classSession = await prisma.classSession.create({
+      data: {
+        slotId,
+        meetEventId: meetEvent.eventId,
+        meetUrl: meetEvent.meetUrl,
+        estado: "EN_CURSO",
+      },
+    });
+  }
+
+  redirect(classSession.meetUrl!);
 }

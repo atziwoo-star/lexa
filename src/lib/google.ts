@@ -66,15 +66,17 @@ export async function createMeetEvent({
   summary,
   startTimeIso,
   endTimeIso,
+  attendees,
 }: {
   summary: string;
   startTimeIso: string;
   endTimeIso: string;
+  attendees: string[];
 }) {
   const accessToken = await getAccessToken();
 
   const res = await fetch(
-    "https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1",
+    "https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all",
     {
       method: "POST",
       headers: {
@@ -85,6 +87,7 @@ export async function createMeetEvent({
         summary,
         start: { dateTime: startTimeIso },
         end: { dateTime: endTimeIso },
+        attendees: attendees.map((email) => ({ email })),
         conferenceData: {
           createRequest: {
             requestId: crypto.randomUUID(),

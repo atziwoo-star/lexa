@@ -44,6 +44,8 @@ export function TeacherSlotsList({ slots }: { slots: TeacherSlotForClient[] }) {
             {joinable && (
               <Link
                 href={`/class/${slot.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="rounded bg-indigo-600 px-3 py-1.5 text-sm text-white"
               >
                 Join class

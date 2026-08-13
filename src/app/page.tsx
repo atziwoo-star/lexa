@@ -26,7 +26,7 @@ const steps = [
   },
   {
     title: "Join live",
-    body: "Hop into a small-group video class right in your browser. No downloads, no other apps.",
+    body: "Hop into a small-group class on Google Meet — one click from your dashboard, no software to install.",
   },
 ];
 
