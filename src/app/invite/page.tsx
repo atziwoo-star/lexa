@@ -1,12 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function InvitePage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    async function exchangeCode() {
+      const code = new URLSearchParams(window.location.search).get("code");
+      if (!code) {
+        setReady(true);
+        return;
+      }
+
+      const supabase = createClient();
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error) setError(error.message);
+      setReady(true);
+    }
+
+    exchangeCode();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,29 +49,33 @@ export default function InvitePage() {
       <p className="text-sm text-neutral-600">
         Set a password to finish setting up your teacher account.
       </p>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <input
-          type="password"
-          required
-          minLength={8}
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="rounded border px-3 py-2"
-        />
-        {error && (
-          <p className="text-sm text-red-600">
-            {error} — if this link expired, ask your admin to invite you again.
-          </p>
-        )}
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded bg-indigo-600 px-3 py-2 text-white disabled:opacity-50"
-        >
-          {loading ? "Saving..." : "Set password and continue"}
-        </button>
-      </form>
+      {!ready ? (
+        <p className="text-sm text-neutral-600">Verifying your invite link...</p>
+      ) : (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <input
+            type="password"
+            required
+            minLength={8}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="rounded border px-3 py-2"
+          />
+          {error && (
+            <p className="text-sm text-red-600">
+              {error} — if this link expired, ask your admin to invite you again.
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="rounded bg-indigo-600 px-3 py-2 text-white disabled:opacity-50"
+          >
+            {loading ? "Saving..." : "Set password and continue"}
+          </button>
+        </form>
+      )}
     </main>
   );
 }
