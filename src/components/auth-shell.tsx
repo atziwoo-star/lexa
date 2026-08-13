@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OrbitaMark } from "@/components/orbita-mark";
 
 export function AuthShell({
   title,
@@ -16,8 +17,9 @@ export function AuthShell({
         className="animate-blob pointer-events-none absolute top-1/3 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-400/20 blur-3xl dark:bg-indigo-500/10"
       />
       <div className="animate-fade-in-up relative flex w-full max-w-sm flex-col gap-4 rounded-lg border bg-background/80 p-8 shadow-sm backdrop-blur-sm">
-        <Link href="/" className="text-lg font-semibold">
-          Lexa
+        <Link href="/" className="flex flex-col items-center gap-1 self-center">
+          <OrbitaMark size={30} />
+          <span className="text-lg font-semibold leading-none">Lexa</span>
         </Link>
         <div>
           <h1 className="text-xl font-semibold">{title}</h1>
