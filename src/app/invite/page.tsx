@@ -10,20 +10,41 @@ export default function InvitePage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    async function exchangeCode() {
-      const code = new URLSearchParams(window.location.search).get("code");
-      if (!code) {
+    async function establishSession() {
+      const supabase = createClient();
+
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      const hashError = hashParams.get("error_description");
+      if (hashError) {
+        setError(hashError.replace(/\+/g, " "));
         setReady(true);
         return;
       }
 
-      const supabase = createClient();
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (error) setError(error.message);
+      const accessToken = hashParams.get("access_token");
+      const refreshToken = hashParams.get("refresh_token");
+      if (accessToken && refreshToken) {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (error) setError(error.message);
+        setReady(true);
+        return;
+      }
+
+      const code = new URLSearchParams(window.location.search).get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) setError(error.message);
+        setReady(true);
+        return;
+      }
+
       setReady(true);
     }
 
-    exchangeCode();
+    establishSession();
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
