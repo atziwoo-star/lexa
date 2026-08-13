@@ -6,6 +6,7 @@ import { SignOutButton } from "@/components/sign-out-button";
 import { idiomaLabels } from "@/lib/labels";
 import { InviteTeacherForm } from "@/components/invite-teacher-form";
 import { PromoteStudentButton } from "@/components/promote-student-button";
+import { DeleteUserButton } from "@/components/delete-user-button";
 
 function formatUsd(amount: number) {
   return amount.toLocaleString("en-US", {
@@ -151,7 +152,10 @@ export default async function AdminPage() {
                         : "—"}
                     </td>
                     <td className="px-3 py-2">
-                      <PromoteStudentButton userId={row.id} />
+                      <div className="flex flex-col items-start gap-2">
+                        <PromoteStudentButton userId={row.id} />
+                        <DeleteUserButton userId={row.id} nombre={row.nombre} />
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -176,6 +180,7 @@ export default async function AdminPage() {
                   <th className="px-3 py-2 font-medium">Teacher</th>
                   <th className="px-3 py-2 font-medium">Languages</th>
                   <th className="px-3 py-2 font-medium">Timezone</th>
+                  <th className="px-3 py-2 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -189,6 +194,12 @@ export default async function AdminPage() {
                       {teacher.idiomas.map((i) => idiomaLabels[i]).join(", ")}
                     </td>
                     <td className="px-3 py-2">{teacher.zonaHoraria}</td>
+                    <td className="px-3 py-2">
+                      <DeleteUserButton
+                        userId={teacher.user.id}
+                        nombre={teacher.user.nombre}
+                      />
+                    </td>
                   </tr>
                 ))}
               </tbody>
