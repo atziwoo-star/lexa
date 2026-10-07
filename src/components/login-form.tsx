@@ -48,6 +48,12 @@ export function LoginForm() {
         className="rounded border px-3 py-2 outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
       />
       {error && <p className="text-sm text-red-600">{error}</p>}
+      <a
+        href="/forgot-password"
+        className="self-end text-sm text-neutral-600 underline transition-colors hover:text-foreground"
+      >
+        Forgot password?
+      </a>
       <button
         type="submit"
         disabled={loading}

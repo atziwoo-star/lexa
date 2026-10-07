@@ -5,5 +5,8 @@ Disallow: /student
 Disallow: /teacher
 Disallow: /class
 Disallow: /invite
+Disallow: /settings
+Disallow: /forgot-password
+Disallow: /reset-password
 
 Sitemap: https://www.lexalab.net/sitemap.xml

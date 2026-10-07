@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -67,7 +68,15 @@ export default async function StudentPage({
           <h1 className="text-xl font-semibold">My account</h1>
           <p className="text-sm text-neutral-600">{user.nombre}</p>
         </div>
-        <SignOutButton />
+        <div className="flex items-center gap-4">
+          <Link
+            href="/settings"
+            className="text-sm text-neutral-600 underline transition-colors hover:text-foreground"
+          >
+            Settings
+          </Link>
+          <SignOutButton />
+        </div>
       </header>
 
       {purchase === "success" && (

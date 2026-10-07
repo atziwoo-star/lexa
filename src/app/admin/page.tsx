@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DateTime } from "luxon";
 import { getCurrentUser } from "@/lib/auth";
@@ -90,7 +91,15 @@ export default async function AdminPage() {
           <h1 className="text-xl font-semibold">Admin dashboard</h1>
           <p className="text-sm text-neutral-600">{user.nombre}</p>
         </div>
-        <SignOutButton />
+        <div className="flex items-center gap-4">
+          <Link
+            href="/settings"
+            className="text-sm text-neutral-600 underline transition-colors hover:text-foreground"
+          >
+            Settings
+          </Link>
+          <SignOutButton />
+        </div>
       </header>
 
       <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
