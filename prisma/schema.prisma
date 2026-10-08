@@ -69,8 +69,24 @@ model User {
   bookings      Booking[]
   hourPackages  HourPackage[]
   payments      Payment[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
+}
+
+// Una suscripción de Web Push por dispositivo/navegador — un usuario puede
+// tener varias (ej. celular + laptop).
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }
 
 model Teacher {
@@ -97,6 +113,7 @@ model AvailabilitySlot {
   inicioUtc     DateTime @map("inicio_utc")
   finUtc        DateTime @map("fin_utc")
   capacidadMax  Int      @default(5) @map("capacidad_max")
+  recordatorioEnviado Boolean @default(false) @map("recordatorio_enviado")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
@@ -138,6 +155,7 @@ model HourPackage {
   monto            Decimal  @db.Decimal(10, 2)
   moneda           String
   montoUsd         Decimal  @map("monto_usd") @db.Decimal(10, 2)
+  avisoVencimientoEnviado Boolean @default(false) @map("aviso_vencimiento_enviado")
   createdAt        DateTime @default(now()) @map("created_at")
 
   payment          Payment?

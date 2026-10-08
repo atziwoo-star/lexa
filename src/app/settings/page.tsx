@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { ChangePasswordForm } from "@/components/change-password-form";
+import { PushNotificationsToggle } from "@/components/push-notifications-toggle";
 import { SignOutButton } from "@/components/sign-out-button";
 
 export const metadata: Metadata = {
@@ -26,6 +27,11 @@ export default async function SettingsPage() {
         </div>
         <SignOutButton />
       </header>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="font-medium">Notifications</h2>
+        <PushNotificationsToggle />
+      </section>
 
       <section className="flex flex-col gap-4">
         <h2 className="font-medium">Change password</h2>
