@@ -9,6 +9,7 @@ import { InviteTeacherForm } from "@/components/invite-teacher-form";
 import { PromoteStudentButton } from "@/components/promote-student-button";
 import { DeleteUserButton } from "@/components/delete-user-button";
 import { EditTeacherButton } from "@/components/edit-teacher-button";
+import { EditPricingForm } from "@/components/edit-pricing-form";
 
 function formatUsd(amount: number) {
   return amount.toLocaleString("en-US", {
@@ -24,7 +25,7 @@ export default async function AdminPage() {
   const monthStart = DateTime.now().startOf("month").toJSDate();
   const now = new Date();
 
-  const [students, teachers, payments] = await Promise.all([
+  const [students, teachers, payments, settings] = await Promise.all([
     prisma.user.findMany({
       where: { rol: "ALUMNO" },
       include: { hourPackages: true },
@@ -35,6 +36,7 @@ export default async function AdminPage() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.payment.findMany({ where: { estado: "COMPLETADO" } }),
+    prisma.appSettings.findUniqueOrThrow({ where: { id: "default" } }),
   ]);
 
   const totalRevenueUsd = payments.reduce(
@@ -125,6 +127,11 @@ export default async function AdminPage() {
             {formatUsd(totalRevenueUsd)} all-time
           </p>
         </div>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-lg font-semibold">Pricing</h2>
+        <EditPricingForm precioPorHoraUsd={Number(settings.precioPorHoraUsd)} />
       </section>
 
       <section>

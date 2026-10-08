@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 
-const PRICE_PER_HOUR_USD = 20;
-
-export function BuyHoursPanel() {
+export function BuyHoursPanel({ pricePerHourUsd }: { pricePerHourUsd: number }) {
   const [horas, setHoras] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +41,7 @@ export function BuyHoursPanel() {
         />
       </div>
       <p className="pb-2 text-sm text-neutral-600">
-        Total: ${(horas * PRICE_PER_HOUR_USD).toFixed(2)} USD
+        Total: ${(horas * pricePerHourUsd).toFixed(2)} USD
       </p>
       <button
         onClick={handleBuy}

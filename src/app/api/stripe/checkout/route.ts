@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getStripe } from "@/lib/stripe";
 import { getCurrentUser } from "@/lib/auth";
+import { getHourlyPriceUsd } from "@/lib/settings";
 
 const checkoutSchema = z.object({
   horas: z.number().positive().max(100),
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
   }
 
   const body = checkoutSchema.parse(await request.json());
-  const precioBaseUsd = 20;
+  const precioBaseUsd = await getHourlyPriceUsd();
 
   // USD only for now: charging a different currency would need real FX
   // conversion, not just relabeling the same numeric amount — see project notes.

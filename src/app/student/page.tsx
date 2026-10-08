@@ -7,6 +7,7 @@ import { BookClassPanel } from "@/components/book-class-panel";
 import { BuyHoursPanel } from "@/components/buy-hours-panel";
 import { SignOutButton } from "@/components/sign-out-button";
 import { PastClassesList, type PastClassForClient } from "@/components/past-classes-list";
+import { getHourlyPriceUsd } from "@/lib/settings";
 
 export default async function StudentPage({
   searchParams,
@@ -18,7 +19,7 @@ export default async function StudentPage({
 
   const { purchase } = await searchParams;
 
-  const [hourPackages, bookings, pastBookings] = await Promise.all([
+  const [hourPackages, bookings, pastBookings, pricePerHourUsd] = await Promise.all([
     prisma.hourPackage.findMany({
       where: { userId: user.id, fechaVencimiento: { gte: new Date() } },
     }),
@@ -34,6 +35,7 @@ export default async function StudentPage({
       },
       orderBy: { slot: { inicioUtc: "desc" } },
     }),
+    getHourlyPriceUsd(),
   ]);
 
   const hoursBalance = hourPackages.reduce(
@@ -94,7 +96,7 @@ export default async function StudentPage({
         <p className="text-sm text-neutral-600">Hours available</p>
         <p className="text-3xl font-semibold">{hoursBalance}</p>
         <div className="mt-3">
-          <BuyHoursPanel />
+          <BuyHoursPanel pricePerHourUsd={pricePerHourUsd} />
         </div>
       </section>
 

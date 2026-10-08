@@ -1,8 +1,21 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
+import { getHourlyPriceUsd } from "@/lib/settings";
 import { SignOutButton } from "@/components/sign-out-button";
 import { Reveal } from "@/components/reveal";
 import { OrbitaMark } from "@/components/orbita-mark";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const hourlyPriceUsd = await getHourlyPriceUsd();
+  const description = `Live virtual English, Spanish, and Korean classes in small groups of up to 5 students, with real teachers. Book classes that fit your timezone, starting at $${hourlyPriceUsd}/hour.`;
+
+  return {
+    description,
+    openGraph: { description },
+    twitter: { description },
+  };
+}
 
 const languages = [
   {
@@ -22,20 +35,22 @@ const languages = [
   },
 ];
 
-const steps = [
-  {
-    title: "Buy hours",
-    body: "Purchase class hours in your own currency, starting at $20/hour.",
-  },
-  {
-    title: "Book your class",
-    body: "Pick a language and a time that works for you — every teacher's availability shows in your own timezone.",
-  },
-  {
-    title: "Join live",
-    body: "Hop into a small-group class on Google Meet — one click from your dashboard, no software to install.",
-  },
-];
+function buildSteps(hourlyPriceUsd: number) {
+  return [
+    {
+      title: "Buy hours",
+      body: `Purchase class hours in your own currency, starting at $${hourlyPriceUsd}/hour.`,
+    },
+    {
+      title: "Book your class",
+      body: "Pick a language and a time that works for you — every teacher's availability shows in your own timezone.",
+    },
+    {
+      title: "Join live",
+      body: "Hop into a small-group class on Google Meet — one click from your dashboard, no software to install.",
+    },
+  ];
+}
 
 const reasons = [
   {
@@ -85,9 +100,10 @@ const reasons = [
 ];
 
 export default async function Home() {
-  const user = await getCurrentUser();
+  const [user, hourlyPriceUsd] = await Promise.all([getCurrentUser(), getHourlyPriceUsd()]);
   const dashboardPath =
     user?.rol === "PROFESOR" ? "/teacher" : user?.rol === "ADMIN" ? "/admin" : "/student";
+  const steps = buildSteps(hourlyPriceUsd);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -96,7 +112,7 @@ export default async function Home() {
     url: process.env.NEXT_PUBLIC_APP_URL ?? "https://www.lexalab.net",
     description:
       "Live virtual English, Spanish, and Korean classes in small groups of up to 5 students, with real teachers.",
-    priceRange: "$20/hour",
+    priceRange: `$${hourlyPriceUsd}/hour`,
     availableLanguage: ["English", "Spanish", "Korean"],
   };
 
@@ -278,7 +294,7 @@ export default async function Home() {
           <Reveal className="flex w-full flex-col items-center gap-4">
             <h2 className="text-2xl font-semibold">Simple pricing</h2>
             <p className="max-w-xl text-neutral-600">
-              Classes start at <span className="font-medium">$20/hour</span>,
+              Classes start at <span className="font-medium">${hourlyPriceUsd}/hour</span>,
               billed in your own currency. Purchased hours are valid for one
               month, and we&apos;ll remind you before they expire.
             </p>

@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.lexalab.net";
 const title = "Lexa — Live English, Spanish & Korean classes";
 const description =
-  "Live virtual English, Spanish, and Korean classes in small groups of up to 5 students, with real teachers. Book classes that fit your timezone, starting at $20/hour.";
+  "Live virtual English, Spanish, and Korean classes in small groups of up to 5 students, with real teachers. Book classes that fit your timezone.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

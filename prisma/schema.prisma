@@ -50,6 +50,17 @@ enum EstadoGrabacion {
   ELIMINADA
 }
 
+// Fila única (id fijo "default") con ajustes editables desde /admin —
+// hoy solo el precio por hora, pensado para crecer si se agregan más
+// ajustes configurables más adelante.
+model AppSettings {
+  id               String   @id @default("default")
+  precioPorHoraUsd Decimal  @default(20) @map("precio_por_hora_usd") @db.Decimal(10, 2)
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("app_settings")
+}
+
 // Un usuario de Supabase Auth (id = auth.users.id) con su perfil de dominio.
 model User {
   id                 String   @id
