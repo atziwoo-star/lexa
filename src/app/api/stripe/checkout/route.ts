@@ -17,10 +17,13 @@ export async function POST(request: Request) {
   const body = checkoutSchema.parse(await request.json());
   const precioBaseUsd = await getHourlyPriceUsd();
 
-  // USD only for now: charging a different currency would need real FX
-  // conversion, not just relabeling the same numeric amount — see project notes.
+  // Prices stay defined in USD. Relabeling the same number in another currency
+  // would be wrong, so local-currency display is delegated to Stripe's Adaptive
+  // Pricing (real FX done by Stripe). Without it, cards that only accept MXN
+  // (common for Mexican cards) are declined with "currency_not_supported".
   const session = await getStripe().checkout.sessions.create({
     mode: "payment",
+    adaptive_pricing: { enabled: true },
     customer_email: user.email,
     line_items: [
       {
