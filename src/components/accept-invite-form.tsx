@@ -62,7 +62,7 @@ export function AcceptInviteForm() {
       return;
     }
 
-    window.location.href = "/teacher";
+    window.location.href = "/dashboard";
   }
 
   return (

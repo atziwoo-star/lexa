@@ -10,6 +10,8 @@ import { PromoteStudentButton } from "@/components/promote-student-button";
 import { DeleteUserButton } from "@/components/delete-user-button";
 import { EditTeacherButton } from "@/components/edit-teacher-button";
 import { EditPricingForm } from "@/components/edit-pricing-form";
+import { InviteAdminForm } from "@/components/invite-admin-form";
+import { MakeAdminButton } from "@/components/make-admin-button";
 
 function formatUsd(amount: number) {
   return amount.toLocaleString("en-US", {
@@ -25,7 +27,7 @@ export default async function AdminPage() {
   const monthStart = DateTime.now().startOf("month").toJSDate();
   const now = new Date();
 
-  const [students, teachers, payments, settings] = await Promise.all([
+  const [students, teachers, admins, payments, settings] = await Promise.all([
     prisma.user.findMany({
       where: { rol: "ALUMNO" },
       include: { hourPackages: true },
@@ -34,6 +36,10 @@ export default async function AdminPage() {
     prisma.teacher.findMany({
       include: { user: true },
       orderBy: { createdAt: "desc" },
+    }),
+    prisma.user.findMany({
+      where: { rol: "ADMIN" },
+      orderBy: { createdAt: "asc" },
     }),
     prisma.payment.findMany({ where: { estado: "COMPLETADO" } }),
     prisma.appSettings.findUniqueOrThrow({ where: { id: "default" } }),
@@ -174,6 +180,7 @@ export default async function AdminPage() {
                     <td className="px-3 py-2">
                       <div className="flex flex-col items-start gap-2">
                         <PromoteStudentButton userId={row.id} />
+                        <MakeAdminButton userId={row.id} nombre={row.nombre} />
                         <DeleteUserButton userId={row.id} nombre={row.nombre} />
                       </div>
                     </td>
@@ -236,6 +243,47 @@ export default async function AdminPage() {
             </table>
           </div>
         )}
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-lg font-semibold">Admins</h2>
+        <div className="mb-4">
+          <InviteAdminForm />
+        </div>
+        <div className="overflow-x-auto rounded border">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b bg-neutral-50 text-xs text-neutral-600 dark:bg-neutral-900">
+              <tr>
+                <th className="px-3 py-2 font-medium">Admin</th>
+                <th className="px-3 py-2 font-medium">Since</th>
+                <th className="px-3 py-2 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {admins.map((a) => (
+                <tr
+                  key={a.id}
+                  className="border-b transition-colors last:border-0 hover:bg-neutral-50 dark:hover:bg-neutral-900"
+                >
+                  <td className="px-3 py-2">
+                    <div className="font-medium">{a.nombre}</div>
+                    <div className="text-xs text-neutral-500">{a.email}</div>
+                  </td>
+                  <td className="px-3 py-2">
+                    {DateTime.fromJSDate(a.createdAt).toFormat("dd LLL yyyy")}
+                  </td>
+                  <td className="px-3 py-2">
+                    {a.id === user.id ? (
+                      <span className="text-xs text-neutral-500">You</span>
+                    ) : (
+                      <DeleteUserButton userId={a.id} nombre={a.nombre} />
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
   );
