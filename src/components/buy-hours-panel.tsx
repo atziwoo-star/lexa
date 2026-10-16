@@ -50,6 +50,9 @@ export function BuyHoursPanel({ pricePerHourUsd }: { pricePerHourUsd: number }) 
       >
         {loading ? "Redirecting..." : "Buy hours"}
       </button>
+      <p className="w-full text-xs text-neutral-500">
+        You&apos;ll see the price in your local currency at checkout.
+      </p>
       {error && <p className="w-full text-sm text-red-600">{error}</p>}
     </div>
   );

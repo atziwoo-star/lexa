@@ -39,15 +39,18 @@ export async function POST(request: Request) {
       });
 
       if (!existing) {
-        // With Adaptive Pricing the customer may pay in their local currency
-        // (e.g. MXN): amount_total/currency are what was charged, while
-        // currency_conversion keeps the original USD amount for revenue stats.
+        // amount_total/currency are the integration amount (MXN, what
+        // settles to the bank), even when Adaptive Pricing let the customer
+        // pay in their own currency. Revenue stats use the USD list price
+        // checkout stored in metadata; sessions created before that existed
+        // fall back to the session amount.
         const monto = (session.amount_total ?? 0) / 100;
         const moneda = session.currency?.toUpperCase() ?? "USD";
-        const montoUsd =
-          (session.currency_conversion?.amount_total ??
-            session.amount_total ??
-            0) / 100;
+        const montoUsd = session.metadata?.montoUsd
+          ? Number(session.metadata.montoUsd)
+          : (session.currency_conversion?.amount_total ??
+              session.amount_total ??
+              0) / 100;
 
         await prisma.$transaction(async (tx) => {
           const hourPackage = await tx.hourPackage.create({
