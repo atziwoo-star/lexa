@@ -27,7 +27,10 @@ export async function POST(request: Request) {
     const userId = session.metadata?.userId;
     const horas = Number(session.metadata?.horas ?? 0);
 
-    if (userId && horas > 0) {
+    // Only card payments today, which are always "paid" on completion; the
+    // guard keeps delayed methods (e.g. OXXO vouchers) from crediting hours
+    // before the money actually arrives.
+    if (userId && horas > 0 && session.payment_status === "paid") {
       // Stripe can deliver the same event more than once (retries, duplicate
       // delivery). Skip if we've already recorded this checkout session,
       // otherwise the student would get double hours credited for one payment.
@@ -36,7 +39,15 @@ export async function POST(request: Request) {
       });
 
       if (!existing) {
-        const montoUsd = (session.amount_total ?? 0) / 100;
+        // With Adaptive Pricing the customer may pay in their local currency
+        // (e.g. MXN): amount_total/currency are what was charged, while
+        // currency_conversion keeps the original USD amount for revenue stats.
+        const monto = (session.amount_total ?? 0) / 100;
+        const moneda = session.currency?.toUpperCase() ?? "USD";
+        const montoUsd =
+          (session.currency_conversion?.amount_total ??
+            session.amount_total ??
+            0) / 100;
 
         await prisma.$transaction(async (tx) => {
           const hourPackage = await tx.hourPackage.create({
@@ -44,8 +55,8 @@ export async function POST(request: Request) {
               userId,
               horasCompradas: horas,
               fechaVencimiento: DateTime.utc().plus({ months: 1 }).toJSDate(),
-              monto: montoUsd,
-              moneda: session.currency?.toUpperCase() ?? "USD",
+              monto,
+              moneda,
               montoUsd,
             },
           });
@@ -54,8 +65,8 @@ export async function POST(request: Request) {
             data: {
               userId,
               hourPackageId: hourPackage.id,
-              monto: montoUsd,
-              moneda: session.currency?.toUpperCase() ?? "USD",
+              monto,
+              moneda,
               montoUsd,
               estado: "COMPLETADO",
               referenciaStripe: session.id,
