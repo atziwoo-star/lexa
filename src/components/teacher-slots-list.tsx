@@ -40,6 +40,11 @@ export function TeacherSlotsList({ slots }: { slots: TeacherSlotForClient[] }) {
                 {slot.studentNames.length}/{slot.capacidadMax} booked
                 {slot.studentNames.length > 0 && `: ${slot.studentNames.join(", ")}`}
               </p>
+              {joinable && (
+                <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-400">
+                  Don&apos;t forget to record: after joining, click Activities → Recording → Start recording.
+                </p>
+              )}
             </div>
             {joinable && (
               <Link
